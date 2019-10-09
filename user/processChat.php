@@ -2,10 +2,19 @@
 
 require('db.php');
 
+session_start();
+
 $response = [];
 $req = file_get_contents("php://input");
 $req = empty($req) ? (isset($_REQUEST) ? $_REQUEST : []) : $req;
 $req = is_string($req) ? (array) json_decode($req) : $req;
+$currUser = null;
+
+if(isset($_SESSION["user"])){
+	$currUser = $_SESSION["user"];
+}elseif(isset($_COOKIE["user"])){
+	$currUser = $_COOKIE["user"];
+}
 
 /**
  * Chat
@@ -72,18 +81,27 @@ function sendChatMessage()
 	$GLOBALS["response"] = $response;
 }
 
-if(isset($req["action"]) && !empty($req["action"])){
-	$action = $req["action"];
+function abort($errCode)
+{
+	header($_SERVER["SERVER_PROTOCOL"] . " " . $errCode);
+}
 
-	switch ($action) {
-		case 'send-message':
-			sendChatMessage();
-			break;
+if(!empty($currUser)){
+	if(isset($req["action"]) && !empty($req["action"])){
+		$action = $req["action"];
 
-		case 'collect-message':
-			collectChatMessages();
-			break;
+		switch ($action) {
+			case 'send-message':
+				sendChatMessage();
+				break;
+
+			case 'collect-message':
+				collectChatMessages();
+				break;
+		}
 	}
+}else{
+	abort(401);
 }
 
 echo json_encode($response);

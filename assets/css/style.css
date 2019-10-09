@@ -137,3 +137,12 @@ body > .main-content
 {
 	display: block;
 }
+
+.sent-date-time
+{
+	font-size: 10px;
+	position: absolute;
+	bottom: 0;
+	user-select: none;
+	right: 5px;
+}

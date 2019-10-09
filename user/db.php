@@ -35,32 +35,56 @@ class DB
 		return md5($pwd);
 	}
 
-	public function fetchUser($userName, $pwd = '')
+	public function fetchUser($filter = [])
 	{
 		$sql = "SELECT
 					*
 				FROM
 					{$this->USERS_TBL}
-				WHERE
-					is_active = {$this->activeYes}
-				AND LOWER(username) = LOWER('{$userName}')";
+				WHERE";
+		$activeSql = " is_active = {$this->activeYes}";
+		$whereCond = "";
 
-		if(!empty($pwd)){
-			$sql .= " AND password = '" . $this->encryptPwd($pwd) . "'";
+		if(isset($filter["inclInactive"]) && $filter["inclInactive"] === true){
+			$activeSql = "";
 		}
 
-		$rows = [];
-		$conn = $this->conn();
-		$res = $conn->query($sql);
+		if(isset($filter["username"]) && !empty($filter["username"])){
+			$username = $filter["username"];
+			$whereCond = (!empty($activeSql) ? " AND" : "") . " LOWER(username) = LOWER('$username')";
+		}
 
-		if($res->num_rows > 0){
-			while($row = $res->fetch_assoc()){
-				$rows[] = (object) 	[
-										"name" => $row["name"],
-										"id" => $row["id"],
-										"username" => $row["username"],
-										"email" => $row["email"],
-									];
+		if(isset($filter["email"]) && !empty($filter["email"])){
+			$email = $filter["email"];
+			$whereCond .= (!empty($activeSql) ? " AND" : "") . " LOWER(email) = LOWER('$email')";
+		}
+
+		if(isset($filter["userOrEmail"]) && !empty($filter["userOrEmail"])){
+			$userOrEmail = $filter["userOrEmail"];
+			$whereCond .= (!empty($activeSql) ? " AND" : "") . " (LOWER(username) = LOWER('$userOrEmail') OR LOWER(email) = LOWER('$userOrEmail'))";
+		}
+
+		if(isset($filter["pwd"]) && !empty($filter["pwd"])){
+			$whereCond .= (!empty($activeSql) ? " AND" : "") . " password = '" . $this->encryptPwd($filter["pwd"]) . "'";
+		}
+
+		$sql .= $activeSql . $whereCond;
+
+		$rows = [];
+
+		if(count($filter) > 0 && !empty($whereCond)){
+			$conn = $this->conn();
+			$res = $conn->query($sql);
+
+			if($res->num_rows > 0){
+				while($row = $res->fetch_assoc()){
+					$rows[] = (object) 	[
+											"name" => $row["name"],
+											"id" => $row["id"],
+											"username" => $row["username"],
+											"email" => $row["email"],
+										];
+				}
 			}
 		}
 
@@ -77,12 +101,12 @@ class DB
 					) AS message_from,
 					message_to,
 					message as message,
-					sent_at as at
+					DATE_FORMAT(sent_at, '%d-%m-%Y on %H:%i %p') AS sentDateTime
 				FROM
 					{$this->CHAT_TBL}
 				WHERE
 					active_status = {$this->activeYes}
-				AND (LOWER(message_to) = LOWER('$to') OR LOWER(message_from) = LOWER('$to'))";
+				AND (LOWER(message_to) = LOWER('$to') OR message_to = 'all' OR LOWER(message_from) = LOWER('$to'))";
 
 		$rows = [];
 		$conn = $this->conn();
@@ -94,13 +118,34 @@ class DB
 										"from" => $row["message_from"],
 										"to" => $row["message_to"],
 										"message" => $row["message"],
-										"at" => $row["at"],
+										"at" => $row["sentDateTime"],
 										"senderIcon" => substr($row["message_from"], 0, 1)
 									];
 			}
 		}
 
 		return $rows;
+	}
+
+	public function storeUser($username, $email, $pwd)
+	{
+		$datetime = date("Y-m-d H:i:s");
+		$pwd = $this->encryptPwd($pwd);
+		$name = ucwords($username);
+		$sql = "INSERT INTO {$this->USERS_TBL}
+					(name, username, email, password, is_active, date_created)
+				VALUES
+					(
+						'{$name}',
+						'{$username}',
+						'{$email}',
+						'{$pwd}',
+						'{$this->activeYes}',
+						'{$datetime}'
+					)";
+		$conn = self::conn();
+
+		return $conn->query($sql) === true ? $conn->insert_id : false;
 	}
 
 	public function storeChat($from, $to, $message)

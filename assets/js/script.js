@@ -53,8 +53,49 @@ for(i = 0; i < tabElements.length; i++){
 	}
 }
 
+var togglePwdBtns = document.getElementsByClassName('toggle-pwd-fields');
+
+for(i = 0; i < togglePwdBtns.length; i++){
+	togglePwdBtns[i].addEventListener('click', function(e){
+		var form = this.closest('form');
+		var pwdFields = form.getElementsByClassName('password-field');
+
+		for(j = 0; j < pwdFields.length; j++){
+			if(this.checked){
+				pwdFields[j].setAttribute('type', 'text');
+			}else{
+				pwdFields[j].setAttribute('type', 'password');
+			}
+		}
+	});
+}
+
+function showTab(id)
+{
+	if(id != null && id){
+		var element = document.querySelector(id);
+
+		if(element != null){
+			if(element.classList.contains('tab-pane')){
+				var tabLinkElement = document.querySelector('.tab-item > a[href="' + id + '"]');
+
+				if(tabLinkElement != null){
+					tabLinkElement.click();
+				}
+			}
+		}
+	}
+}
+
+window.onhashchange = () => {
+	var id = location.hash;
+	showTab(id);
+};
+
 window.onload = () => {
 	if(typeof(MSG_SHO_ON_LOAD) != 'undefined'){
 		toggleToast(true, MSG_SHO_ON_LOAD);
 	}
+
+	showTab(location.hash);
 };

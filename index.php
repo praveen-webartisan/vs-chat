@@ -2,12 +2,18 @@
 	session_start();
 
 	$baseUrl = "http://" . $_SERVER["SERVER_NAME"] . "/" . basename(__DIR__);
+	$chatUrl = $baseUrl . "/user/chat.php";
+
+	if(isset($_SESSION["user"]) || isset($_COOKIE["user"])){
+		header("Location: $chatUrl");
+	}
 
 	$_SESSION["baseUrl"] = $baseUrl;
 	$loginValidationMsg = [];
 	$signUpValidationMsg = [];
 	$message = "";
-	$input = [];
+	$loginInput = [];
+	$signUpInput = [];
 
 	if(isset($_SESSION["validationMsg"])){
 		$validationMsg = $_SESSION["validationMsg"];
@@ -28,10 +34,12 @@
 		unset($_SESSION["message"]);
 	}
 
-	// Get INPUT Array and USE in fields to show OLD data
-	if(isset($_SESSION["oldInput"])){
-		$input = $_SESSION["oldInput"];
-		unset($_SESSION["oldInput"]);
+	if(isset($_SESSION["oldLoginInput"])){
+		$loginInput = $_SESSION["oldLoginInput"];
+		unset($_SESSION["oldLoginInput"]);
+	}elseif(isset($_SESSION["oldSignUpInput"])){
+		$signUpInput = $_SESSION["oldSignUpInput"];
+		unset($_SESSION["oldSignUpInput"]);
 	}
 ?>
 <!DOCTYPE html>
@@ -40,12 +48,9 @@
 	<title>Chat App using Vue.js</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<!-- Spectre CSS -->
-	<link rel="stylesheet" type="text/css" href="assets/css/fa/css/all.css" />
-	<link rel="stylesheet" type="text/css" href="assets/css/spectre/spectre.min.css" />
-	<link rel="stylesheet" type="text/css" href="assets/css/spectre/spectre-exp.min.css" />
-	<link rel="stylesheet" type="text/css" href="assets/css/spectre/spectre-icons.min.css" />
-	<link rel="stylesheet" type="text/css" href="assets/css/style.css" />
+	<?php
+		include 'assets/styles.php';
+	?>
 
 	<!-- Custom CSS -->
 	<style type="text/css">
@@ -69,7 +74,7 @@
 	<!-- Content -->
 	<div class="bg-secondary main-content">
 
-		<div class="col-3 center-in-parent">
+		<div class="col-3 col-lg-10 center-in-parent">
 			<ul class="tab tab-block">
 				<li class="tab-item active">
 					<a href="#sectionLogin">Login</a>
@@ -84,7 +89,7 @@
 					<form action="<?=$baseUrl . '/user/auth.php?action=login';?>" method="post" class="col-12" autocomplete="off">
 						<div class="form-group <?=isset($loginValidationMsg['txtUsr']) ? 'has-error' : '';?>">
 							<div class="has-icon-left">
-								<input type="text" class="form-input" id="txtUsr" name="txtUsr" placeholder="Username">
+								<input type="text" class="form-input" id="txtUsr" name="txtUsr" placeholder="Username" value="<?=(isset($loginInput['txtUsr']) ? $loginInput['txtUsr'] : '')?>">
 								<i class="fas fa-user form-icon"></i>
 							</div>
 							<?php if(isset($loginValidationMsg['txtUsr'])): ?>
@@ -101,11 +106,65 @@
 							<?php endif; ?>
 						</div>
 						<div class="form-group">
+							<label class="form-checkbox">
+								<input type="checkbox" name="loginPermanent" value="yes">
+								<i class="form-icon"></i> Remember Me
+							</label>
+						</div>
+						<div class="form-group">
 							<button type="submit" class="btn p-centered">Login</button>
 						</div>
 					</form>
 				</div>
-				<div class="tab-pane" id="sectionSignup"></div>
+				<div class="tab-pane" id="sectionSignup">
+					<form action="<?=$baseUrl . '/user/auth.php?action=signup';?>" method="post" class="col-12" autocomplete="off">
+						<div class="form-group <?=isset($signUpValidationMsg['txtRegUsr']) ? 'has-error' : '';?>">
+							<div class="has-icon-left">
+								<input type="text" class="form-input" id="txtRegUsr" name="txtRegUsr" placeholder="Username" value="<?=(isset($signUpInput['txtRegUsr']) ? $signUpInput['txtRegUsr'] : '')?>">
+								<i class="fas fa-user form-icon"></i>
+							</div>
+							<?php if(isset($signUpValidationMsg['txtRegUsr'])): ?>
+								<p class="form-input-hint"><?=$signUpValidationMsg['txtRegUsr'];?></p>
+							<?php endif; ?>
+						</div>
+						<div class="form-group <?=isset($signUpValidationMsg['txtRegEmail']) ? 'has-error' : '';?>">
+							<div class="has-icon-left">
+								<input type="text" class="form-input" id="txtRegEmail" name="txtRegEmail" placeholder="Email" value="<?=(isset($signUpInput['txtRegEmail']) ? $signUpInput['txtRegEmail'] : '')?>">
+								<i class="fas fa-envelope form-icon"></i>
+							</div>
+							<?php if(isset($signUpValidationMsg['txtRegEmail'])): ?>
+								<p class="form-input-hint"><?=$signUpValidationMsg['txtRegEmail'];?></p>
+							<?php endif; ?>
+						</div>
+						<div class="form-group <?=isset($signUpValidationMsg['txtRegPwd']) ? 'has-error' : '';?>">
+							<div class="has-icon-left">
+								<input type="password" class="form-input password-field" id="txtRegPwd" name="txtRegPwd" placeholder="Password" autocomplete="new-password" value="<?=(isset($signUpInput['txtRegPwd']) ? $signUpInput['txtRegPwd'] : '')?>">
+								<i class="fas fa-key form-icon"></i>
+							</div>
+							<?php if(isset($signUpValidationMsg['txtRegPwd'])): ?>
+								<p class="form-input-hint"><?=$signUpValidationMsg['txtRegPwd'];?></p>
+							<?php endif; ?>
+						</div>
+						<div class="form-group <?=isset($signUpValidationMsg['txtRegCnfPwd']) ? 'has-error' : '';?>">
+							<div class="has-icon-left">
+								<input type="password" class="form-input password-field" id="txtRegCnfPwd" name="txtRegCnfPwd" placeholder="Confirm Password" autocomplete="new-password" value="<?=(isset($signUpInput['txtRegCnfPwd']) ? $signUpInput['txtRegCnfPwd'] : '')?>">
+								<i class="fas fa-key form-icon"></i>
+							</div>
+							<?php if(isset($signUpValidationMsg['txtRegCnfPwd'])): ?>
+								<p class="form-input-hint"><?=$signUpValidationMsg['txtRegCnfPwd'];?></p>
+							<?php endif; ?>
+						</div>
+						<div class="form-group">
+							<label class="form-checkbox">
+								<input type="checkbox" class="toggle-pwd-fields">
+								<i class="form-icon"></i> Show Password
+							</label>
+						</div>
+						<div class="form-group">
+							<button type="submit" class="btn p-centered">Signup</button>
+						</div>
+					</form>
+				</div>
 			</div>
 		</div>
 

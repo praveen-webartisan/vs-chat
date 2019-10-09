@@ -3,11 +3,18 @@
 
 	$baseUrl = "http://" . $_SERVER["SERVER_NAME"] . strrev(substr(strrev(dirname($_SERVER['PHP_SELF'])), strpos(strrev(dirname($_SERVER['PHP_SELF'])), "/")));
 
-	if(!isset($_SESSION["user"])){
-		header("Location: $baseUrl");
+	$currUser = null;
+
+	if(isset($_SESSION["user"])){
+		$currUser = $_SESSION["user"];
+	}elseif(isset($_COOKIE["user"])){
+		$currUser = $_COOKIE["user"];
 	}
 
-	$currUser = $_SESSION["user"];
+	if(empty($currUser)){
+		header("Location: $baseUrl");
+	}
+	
 ?>
 <!DOCTYPE html>
 <html>
@@ -15,11 +22,9 @@
 	<title>Chat App using Vue.js</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<!-- Spectre CSS -->
-	<link rel="stylesheet" type="text/css" href="assets/css/fa/css/all.css" />
-	<link rel="stylesheet" type="text/css" href="assets/css/spectre/spectre.min.css" />
-	<link rel="stylesheet" type="text/css" href="assets/css/spectre/spectre-exp.min.css" />
-	<link rel="stylesheet" type="text/css" href="assets/css/spectre/spectre-icons.min.css" />
+	<?php
+		include '../assets/styles.php';
+	?>
 
 	<!-- Custom CSS -->
 	<style type="text/css">
@@ -37,6 +42,18 @@
 	<header class="navbar">
 		<section class="navbar-section">
 			<a class="navbar-brand ml-2 mr-2" href="">VS Chat</a>
+		</section>
+		<section class="navbar-section">
+			<div class="dropdown dropdown-right mr-2">
+				<a class="btn btn-link dropdown-toggle" tabindex="0">
+					<?=$currUser;?>
+				</a>
+				<ul class="menu">
+					<li class="menu-item">
+						<a href="<?=$baseUrl;?>user/auth.php?action=logout">Logout</a>
+					</li>
+				</ul>
+			</div>
 		</section>
 	</header>
 
@@ -68,12 +85,9 @@
 		</div>
 	</div>
 
-	<!-- Vue.js -->
-	<script type="text/javascript" src="assets/js/vue.min.js"></script>
-	<!-- Axios js -->
-	<script type="text/javascript" src="assets/js/axios.min.js"></script>
-	<!-- Custom JS -->
-	<script type="text/javascript" src="assets/js/script.js"></script>
+	<?php
+		include '../assets/scripts.php';
+	?>
 	<script type="text/javascript">
 		const CURR_USER = '<?=$currUser; ?>';
 		Vue.component('chat-message', {
@@ -84,6 +98,7 @@
 								'<div class="column col-6">' + 
 									'<div class="column col-11 has-message">' + 
 										'{{ chat.message }}' + 
+										'<span class="sent-date-time">{{ chat.at }}</span>' + 
 									'</div>' + 
 									'<div class="column col-1">' + 
 										'<figure class="avatar avatar-sm ml-1 tooltip" v-bind:data-tooltip="chat.from">' + 
@@ -99,6 +114,7 @@
 									'</div>' + 
 									'<div class="column col-11 has-message">' + 
 										'{{ chat.message }}' + 
+										'<span class="sent-date-time">{{ chat.at }}</span>' + 
 									'</div>' + 
 								'</div>' + 
 								'<div class="column col-6"></div>' + 
@@ -152,7 +168,7 @@
 
 						axios({
 							method: 'post',
-							url: '<?=$baseUrl . "/processChat.php";?>',
+							url: '<?=$baseUrl . "user/processChat.php";?>',
 							data: {
 								action: 'send-message',
 								from: CURR_USER,
@@ -184,7 +200,7 @@
 
 		window.collectChatMessages = (() => {
 			axios
-				.get('<?=$baseUrl . "/processChat.php?action=collect-message&for=" . $currUser;?>')
+				.get('<?=$baseUrl . "user/processChat.php?action=collect-message&for=" . $currUser;?>')
 				.then(response => {
 					var data = response.data;
 
@@ -194,7 +210,8 @@
 				})
 				.catch(error => {
 					chatBox.errorOccured = true
-					console.log(error);
+					toggleToast(true, error);
+					clearInterval(chatBox.intChatReload);
 				})
 				.finally(() => {
 					chatBox.loading = false;
