@@ -9,6 +9,7 @@ class DB
 	private $DATABASE = "test";
 	private $CHAT_TBL = "chat";
 	private $USERS_TBL = "users";
+	private $EMOJI_TBL = "emoji";
 	private $USER = "root";
 	private $PWD = "letmein1!";
 	private $activeYes = 1;
@@ -163,6 +164,26 @@ class DB
 		$conn = self::conn();
 
 		return $conn->query($sql) === true;
+	}
+
+	public function fetchEmojis()
+	{
+		$sql = "SELECT
+					*
+				FROM
+					{$this->EMOJI_TBL}";
+
+		$icons = null;
+		$conn = $this->conn();
+		$res = $conn->query($sql);
+
+		if($res->num_rows > 0){
+			while($row = $res->fetch_assoc()){
+				$icons = $row["icons"];
+			}
+		}
+
+		return $icons;
 	}
 
 }

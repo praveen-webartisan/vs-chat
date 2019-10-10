@@ -46,7 +46,9 @@
 <html>
 <head>
 	<title>Chat App using Vue.js</title>
+	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" type="text/css" href="<?=$baseUrl;?>/assets/logo.png">
 
 	<?php
 		include 'assets/styles.php';
@@ -170,7 +172,9 @@
 
 	</div>
 
-	<script type="text/javascript" src="assets/js/script.js"></script>
+	<?php
+		include 'assets/scripts.php';
+	?>
 	<script type="text/javascript">
 		<?php if(!empty($message)): ?>
 			const MSG_SHO_ON_LOAD = '<?=$message; ?>';

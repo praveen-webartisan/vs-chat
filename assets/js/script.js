@@ -70,6 +70,34 @@ for(i = 0; i < togglePwdBtns.length; i++){
 	});
 }
 
+// Check Page Visibility
+var documentHidden, documentVisibilityChange;
+
+if(typeof document.hidden !== "undefined"){
+	// Opera 12.10 and Firefox 10 and later support
+	documentHidden = "hidden";
+	documentVisibilityChange = "visibilitychange";
+}else if(typeof document.msHidden !== "undefined"){
+	// IE
+	documentHidden = "msHidden";
+	documentVisibilityChange = "msvisibilitychange";
+}else if(typeof document.webkitHidden !== "undefined"){
+	// Chrome and latest browsers
+	documentHidden = "webkitHidden";
+	documentVisibilityChange = "webkitvisibilitychange";
+}
+
+function addPageFocusChangeListener(customFunction)
+{
+	if(documentHidden === undefined){
+		console.error("This browser does not supports Page Visibility API");
+	}else{
+		document.addEventListener(documentVisibilityChange, function(){
+			customFunction();
+		});
+	}
+}
+
 function showTab(id)
 {
 	if(id != null && id){
@@ -87,6 +115,44 @@ function showTab(id)
 	}
 }
 
+function checkNotification()
+{
+	var canNotify = false;
+
+	if(!'Notification' in window){
+		console.error('This browser does not support desktop notification');
+	}else if(Notification.permission === 'granted'){
+		canNotify = true;
+	}else if(Notification.permission === 'denied'){
+		Notification.requestPermission().then(function(permission){
+			window.canNotify = permission === 'granted';
+		});
+	}
+
+	window.canNotify = canNotify;
+}
+
+function showNotification(content, callback)
+{
+	var title = 'VS Chat';
+	var options = {
+		icon: BASEURL + 'assets/logo.png',
+		body: content
+	};
+	var currUrl = window.location.href;
+
+	var notification = new Notification(title, options);
+	notification.onclick = function(){
+		if(callback === undefined){
+			window.focus();
+		}else{
+			callback();
+		}
+
+		this.close();
+	};
+}
+
 window.onhashchange = () => {
 	var id = location.hash;
 	showTab(id);
@@ -96,6 +162,8 @@ window.onload = () => {
 	if(typeof(MSG_SHO_ON_LOAD) != 'undefined'){
 		toggleToast(true, MSG_SHO_ON_LOAD);
 	}
+
+	checkNotification();
 
 	showTab(location.hash);
 };

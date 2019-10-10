@@ -10,10 +10,19 @@ $req = empty($req) ? (isset($_REQUEST) ? $_REQUEST : []) : $req;
 $req = is_string($req) ? (array) json_decode($req) : $req;
 $currUser = null;
 
+// Allow request without authentication
+$allowWithoutAuth = [
+	'collect-emojis'
+];
+
 if(isset($_SESSION["user"])){
 	$currUser = $_SESSION["user"];
 }elseif(isset($_COOKIE["user"])){
 	$currUser = $_COOKIE["user"];
+}
+
+if(isset($req["action"]) && in_array($req["action"], $allowWithoutAuth)){
+	$currUser = 'SYSTEM';
 }
 
 /**
@@ -38,6 +47,19 @@ class Chat
 		return $this->db->fetchChat($to);
 	}
 
+	public function getEmojis()
+	{
+		$data = $this->db->fetchEmojis();
+		return $data;
+	}
+
+}
+
+function collectEmojiIcons()
+{
+	$chat = new Chat();
+	$data = $chat->getEmojis();
+	$GLOBALS["response"]["data"] = $data ? base64_encode($data) : null;
 }
 
 function collectChatMessages()
@@ -97,6 +119,10 @@ if(!empty($currUser)){
 
 			case 'collect-message':
 				collectChatMessages();
+				break;
+
+			case 'collect-emojis':
+				collectEmojiIcons();
 				break;
 		}
 	}

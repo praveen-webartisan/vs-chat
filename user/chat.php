@@ -1,4 +1,5 @@
 <?php
+
 	session_start();
 
 	$baseUrl = "http://" . $_SERVER["SERVER_NAME"] . strrev(substr(strrev(dirname($_SERVER['PHP_SELF'])), strpos(strrev(dirname($_SERVER['PHP_SELF'])), "/")));
@@ -14,13 +15,15 @@
 	if(empty($currUser)){
 		header("Location: $baseUrl");
 	}
-	
+
 ?>
 <!DOCTYPE html>
 <html>
 <head>
 	<title>Chat App using Vue.js</title>
+	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" type="text/css" href="<?=$baseUrl;?>/assets/logo.png">
 
 	<?php
 		include '../assets/styles.php';
@@ -76,9 +79,11 @@
 				<div class="columns col-gapless ">
 					<div class="column col-12 col-lg-12 cont-message-box-btn">
 						<textarea class="form-input" id="txtMessage" placeholder="Type your message here" rows="3" v-on:keydown="onPress"></textarea>
-						<button class="btn p-absolute r-0" id="btnSendMessage">
-							<i class="fas fa-paper-plane"></i>
-						</button>
+						<div class="btns-container p-absolute">
+							<button class="btn" id="btnSendMessage">
+								<i class="fas fa-paper-plane"></i>
+							</button>
+						</div>
 					</div>
 				</div>
 			</form>
@@ -198,6 +203,26 @@
 			}
 		});
 
+		function notifyWhenNewMsg(data)
+		{
+			var currMsgCount = data.length;
+			var lastMsgCount = window.lastMsgCount === undefined ? currMsgCount : window.lastMsgCount;
+
+			if((currMsgCount > lastMsgCount) && document[documentHidden]){
+				if(window.canNotify){
+					var lastMsg = data[data.length - 1];
+
+					if(lastMsg.from != 'me'){
+						showNotification(lastMsg.from + ' says ' + lastMsg.message.substr(0, 20) + '...');
+					}
+				}else{
+					console.error("User has not given the permission to show notification!");
+				}
+			}
+
+			window.lastMsgCount = currMsgCount;
+		}
+
 		window.collectChatMessages = (() => {
 			axios
 				.get('<?=$baseUrl . "user/processChat.php?action=collect-message&for=" . $currUser;?>')
@@ -205,7 +230,9 @@
 					var data = response.data;
 
 					if(typeof(data.data) != 'undefined'){
-						chatBox.chatMessages = data.data;
+						data = data.data;
+						notifyWhenNewMsg(data);
+						chatBox.chatMessages = data;
 					}
 				})
 				.catch(error => {

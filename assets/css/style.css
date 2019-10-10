@@ -88,16 +88,21 @@ body > .navbar
 
 .cont-message-box-btn > textarea
 {
-	padding-right: 70px;
+	padding-right: 120px;
 }
 
-.cont-message-box-btn > button
+.cont-message-box-btn > .btns-container
 {
 	right: 20px;
 	top: 50%;
 	transform: translateY(-50%);
-	border: 0;
 	font-size: 30px;
+}
+
+.btns-container > button
+{
+	font-size: inherit;
+	border: 0;
 }
 
 .avatar
