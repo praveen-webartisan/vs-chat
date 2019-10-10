@@ -102,7 +102,7 @@
 								'<div class="column col-6"></div>' + 
 								'<div class="column col-6">' + 
 									'<div class="column col-11 has-message">' + 
-										'{{ chat.message }}' + 
+										'<span v-html="formatDispMsg(chat.message)"></span>' + 
 										'<span class="sent-date-time">{{ chat.at }}</span>' + 
 									'</div>' + 
 									'<div class="column col-1">' + 
@@ -118,7 +118,7 @@
 									'<div class="column col-1">' + 
 									'</div>' + 
 									'<div class="column col-11 has-message">' + 
-										'{{ chat.message }}' + 
+										'<span v-html="formatDispMsg(chat.message)"></span>' + 
 										'<span class="sent-date-time">{{ chat.at }}</span>' + 
 									'</div>' + 
 								'</div>' + 
@@ -213,7 +213,8 @@
 					var lastMsg = data[data.length - 1];
 
 					if(lastMsg.from != 'me'){
-						showNotification(lastMsg.from + ' says ' + lastMsg.message.substr(0, 20) + '...');
+						var message = lastMsg.message.replace(/\n/g, ' ').substr(0, 20);
+						showNotification(lastMsg.from + ' says ' + message + '...');
 					}
 				}else{
 					console.error("User has not given the permission to show notification!");
@@ -249,6 +250,11 @@
 			var chatBoxElement = document.getElementById('chatBox');
 				chatBoxElement.scrollTo({left: 0, top: chatBoxElement.scrollHeight, behavior: 'smooth'});
 		});
+
+		function formatDispMsg(message)
+		{
+			return message.replace(/\n/g, '<br>');
+		}
 	</script>
 </body>
 </html>
