@@ -1,0 +1,4 @@
+<FilesMatch "db\.php|mail\.php">
+	Order Deny,Allow
+	Deny from all
+</FilesMatch>

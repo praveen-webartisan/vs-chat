@@ -106,7 +106,7 @@
 										'<span class="sent-date-time">{{ chat.at }}</span>' + 
 									'</div>' + 
 									'<div class="column col-1">' + 
-										'<figure class="avatar avatar-sm ml-1 tooltip" v-bind:data-tooltip="chat.from">' + 
+										'<figure class="avatar avatar-md ml-1 tooltip" v-bind:data-tooltip="chat.from">' + 
 											'{{ chat.senderIcon }}' + 
 											'<i class="avatar-presence online"></i>' + 
 										'</figure>' + 

@@ -13,7 +13,7 @@ class DB
 	private $USER = "root";
 	private $PWD = "letmein1!";
 	private $activeYes = 1;
-	private $activeNo = 1;
+	private $activeNo = 0;
 
 	public function __construct()
 	{
@@ -69,6 +69,11 @@ class DB
 			$whereCond .= (!empty($activeSql) ? " AND" : "") . " password = '" . $this->encryptPwd($filter["pwd"]) . "'";
 		}
 
+		if(isset($filter["verificationToken"]) && !empty($filter["verificationToken"])){
+			$verificationToken = $filter["verificationToken"];
+			$whereCond .= (!empty($activeSql) ? " AND" : "") . " LOWER(verification_token) = LOWER('$verificationToken')";
+		}
+
 		$sql .= $activeSql . $whereCond;
 
 		$rows = [];
@@ -84,6 +89,8 @@ class DB
 											"id" => $row["id"],
 											"username" => $row["username"],
 											"email" => $row["email"],
+											"verificationToken" => $row["verification_token"],
+											"tokenVerifiedOn" => $row["token_verified"],
 										];
 				}
 			}
@@ -102,7 +109,8 @@ class DB
 					) AS message_from,
 					message_to,
 					message as message,
-					DATE_FORMAT(sent_at, '%d-%m-%Y on %H:%i %p') AS sentDateTime
+					DATE_FORMAT(sent_at, '%d-%m-%Y on %H:%i %p') AS sentDateTime,
+					id
 				FROM
 					{$this->CHAT_TBL}
 				WHERE
@@ -120,7 +128,8 @@ class DB
 										"to" => $row["message_to"],
 										"message" => $row["message"],
 										"at" => $row["sentDateTime"],
-										"senderIcon" => substr($row["message_from"], 0, 1)
+										"senderIcon" => strtoupper(substr($row["message_from"], 0, 1)),
+										"messageId" => $row["id"]
 									];
 			}
 		}
@@ -128,25 +137,42 @@ class DB
 		return $rows;
 	}
 
-	public function storeUser($username, $email, $pwd)
+	public function storeUser($username, $email, $pwd, $verifyToken)
 	{
 		$datetime = date("Y-m-d H:i:s");
 		$pwd = $this->encryptPwd($pwd);
 		$name = ucwords($username);
 		$sql = "INSERT INTO {$this->USERS_TBL}
-					(name, username, email, password, is_active, date_created)
+					(name, username, email, password, verification_token, is_active, date_created)
 				VALUES
 					(
 						'{$name}',
 						'{$username}',
 						'{$email}',
 						'{$pwd}',
-						'{$this->activeYes}',
+						'{$verifyToken}',
+						'{$this->activeNo}',
 						'{$datetime}'
 					)";
 		$conn = self::conn();
 
 		return $conn->query($sql) === true ? $conn->insert_id : false;
+	}
+
+	public function updateUserVerification($userId)
+	{
+		$datetime = date("Y-m-d H:i:s");
+		$sql = "UPDATE
+					{$this->USERS_TBL}
+				SET
+					is_active = '{$this->activeYes}',
+					token_verified = '{$datetime}',
+					date_modified = '{$datetime}'
+				WHERE
+					id = " . $userId;
+		$conn = self::conn();
+
+		return $conn->query($sql) === true;
 	}
 
 	public function storeChat($from, $to, $message)
