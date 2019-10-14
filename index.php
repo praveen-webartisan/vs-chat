@@ -1,7 +1,8 @@
 <?php
 	session_start();
 
-	$baseUrl = "http://" . $_SERVER["SERVER_NAME"] . "/" . basename(__DIR__);
+	require 'constants.php';
+
 	$chatUrl = $baseUrl . "/user/chat.php";
 
 	if(isset($_SESSION["user"]) || isset($_COOKIE["user"])){
@@ -45,7 +46,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Chat App using Vue.js</title>
+	<title><?=APP_TITLE;?></title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="icon" type="text/css" href="<?=$baseUrl;?>/assets/logo.png">
@@ -69,7 +70,7 @@
 	<!-- Nav -->
 	<header class="navbar">
 		<section class="navbar-section">
-			<a class="navbar-brand ml-2 mr-2" href="">VS Chat</a>
+			<a class="navbar-brand ml-2 mr-2" href=""><?=APP_TITLE;?></a>
 		</section>
 	</header>
 

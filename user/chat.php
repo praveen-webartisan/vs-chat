@@ -2,7 +2,7 @@
 
 	session_start();
 
-	$baseUrl = "http://" . $_SERVER["SERVER_NAME"] . strrev(substr(strrev(dirname($_SERVER['PHP_SELF'])), strpos(strrev(dirname($_SERVER['PHP_SELF'])), "/")));
+	require '../constants.php';
 
 	$currUser = null;
 
@@ -20,7 +20,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Chat App using Vue.js</title>
+	<title><?=APP_TITLE;?></title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="icon" type="text/css" href="<?=$baseUrl;?>/assets/logo.png">
@@ -44,7 +44,7 @@
 	<!-- Nav -->
 	<header class="navbar">
 		<section class="navbar-section">
-			<a class="navbar-brand ml-2 mr-2" href="">VS Chat</a>
+			<a class="navbar-brand ml-2 mr-2" href=""><?=APP_TITLE;?></a>
 		</section>
 		<section class="navbar-section">
 			<div class="dropdown dropdown-right mr-2">
@@ -53,7 +53,7 @@
 				</a>
 				<ul class="menu">
 					<li class="menu-item">
-						<a href="<?=$baseUrl;?>user/auth.php?action=logout">Logout</a>
+						<a href="<?=$baseUrl;?>/user/auth.php?action=logout">Logout</a>
 					</li>
 				</ul>
 			</div>
@@ -173,7 +173,7 @@
 
 						axios({
 							method: 'post',
-							url: '<?=$baseUrl . "user/processChat.php";?>',
+							url: '<?=$baseUrl . "/user/processChat.php";?>',
 							data: {
 								action: 'send-message',
 								from: CURR_USER,
@@ -226,7 +226,7 @@
 
 		window.collectChatMessages = (() => {
 			axios
-				.get('<?=$baseUrl . "user/processChat.php?action=collect-message&for=" . $currUser;?>')
+				.get('<?=$baseUrl . "/user/processChat.php?action=collect-message&for=" . $currUser;?>')
 				.then(response => {
 					var data = response.data;
 

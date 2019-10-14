@@ -3,9 +3,9 @@
 session_start();
 
 $reqUri = $_SERVER["REQUEST_URI"];
-$baseUrl = "http://" . $_SERVER["SERVER_NAME"] . substr($reqUri, 0, strpos($reqUri, basename(__DIR__)));
 
 require 'db.php';
+require '../constants.php';
 
 $req = $_REQUEST;
 $action = isset($req["action"]) ? $req["action"] : null;
@@ -172,7 +172,7 @@ function registerUser()
 
 	if($isUsrValid && $isEmailValid && $isPwdValid && $isConfPwdValid){
 		$token = generateVerificationToken($txtRegEmail);
-		$verifyUrl = $GLOBALS["baseUrl"] . "user/auth.php?action=verify-email&_token=" . $token;
+		$verifyUrl = $GLOBALS["baseUrl"] . "/user/auth.php?action=verify-email&_token=" . $token;
 		$db = new DB();
 		// Store
 		$insertId = $db->storeUser($txtRegUsr, $txtRegEmail, $txtRegPwd, $token);
@@ -182,6 +182,7 @@ function registerUser()
 		require 'mail.php';
 		$mailContent = file_get_contents(SIGNUP_TEMPLATE_FILE);
 		$mailContent = str_replace("USER", $txtRegUsr, $mailContent);
+		$mailContent = str_replace("APP_TITLE", APP_TITLE, $mailContent);
 		$mailContent = str_replace("DATE_TIME", date("d-m-Y H:i"), $mailContent);
 		$mailContent = str_replace("VERIFICATION_LINK", $verifyUrl, $mailContent);
 
