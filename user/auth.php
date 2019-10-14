@@ -25,7 +25,7 @@ function verifyUserEmail()
 
 	if(!empty($token)){
 		$db = new DB();
-		$user = $db->fetchUser(["verificationToken" => $token]);
+		$user = $db->fetchUser(["verificationToken" => $token, "inclInactive" => true]);
 		$user = isset($user[0]) ? $user[0] : null;
 
 		if(!empty($user) && isset($user->verificationToken)){
