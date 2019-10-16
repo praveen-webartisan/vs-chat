@@ -189,7 +189,7 @@ function registerUser()
 		$mail = sendEmail($txtRegEmail, "Please verify your e-mail address", $mailContent);
 
 		if($insertId){
-			$_SESSION["message"] = "Signup success. Please check your email inbox to verify your email address. You can able to login only after your email address is being verified";
+			$_SESSION["message"] = "Signup success. Please check your email inbox or spam to verify your email address. You can able to login only after your email address is being verified";
 			$req = [];
 			$showTab = "";
 		}else{
