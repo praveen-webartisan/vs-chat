@@ -6,12 +6,9 @@
 
 class DB
 {
-	private $DATABASE = "test";
 	private $CHAT_TBL = "chat";
 	private $USERS_TBL = "users";
 	private $EMOJI_TBL = "emoji";
-	private $USER = "root";
-	private $PWD = "letmein1!";
 	private $activeYes = 1;
 	private $activeNo = 0;
 
@@ -22,7 +19,7 @@ class DB
 
 	private function conn()
 	{
-		$conn = new mysqli("localhost", $this->USER, $this->PWD, $this->DATABASE);
+		$conn = new mysqli(getenv("DB_HOST"), getenv("DB_USERNAME"), getenv("DB_PASSWORD"), getenv("DB_NAME"), getenv("DB_PORT"));
 
 		if($conn->connect_error){
 			die("Connection error" . $conn->connect_error);

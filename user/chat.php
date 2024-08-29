@@ -1,8 +1,9 @@
 <?php
+	require '../common.php';
+
+	initCommonMethods();
 
 	session_start();
-
-	require '../constants.php';
 
 	$currUser = null;
 

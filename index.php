@@ -1,7 +1,7 @@
 <?php
 	session_start();
 
-	require 'constants.php';
+	require 'common.php';
 
 	$chatUrl = $baseUrl . "/user/chat.php";
 

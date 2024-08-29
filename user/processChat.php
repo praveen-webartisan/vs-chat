@@ -1,5 +1,9 @@
 <?php
 
+require '../common.php';
+
+initCommonMethods();
+
 require('db.php');
 
 session_start();

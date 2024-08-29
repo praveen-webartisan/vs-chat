@@ -4,8 +4,11 @@ session_start();
 
 $reqUri = $_SERVER["REQUEST_URI"];
 
+require '../common.php';
+
+initCommonMethods();
+
 require 'db.php';
-require '../constants.php';
 
 $req = $_REQUEST;
 $action = isset($req["action"]) ? $req["action"] : null;
